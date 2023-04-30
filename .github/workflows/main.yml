@@ -1,75 +1,146 @@
-name: Actions 😎
+name: GameCI Template 🎮
 
 on: 
-  workflow_dispatch: 
-  pull_request:    
-    branches:
-      - main
-      - develop
+  push: { branches: [master] }
+  workflow_dispatch: {}
+
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  NEW_INDEX: ${{ vars.NEW_INDEX }}
 
 jobs:
-  buildAndTestForSomePlatforms:
-    name: Build for ${{ matrix.targetPlatform }} ✨
+  testRunner:
+    name: Test in ${{ matrix.testMode }} ✨
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - SimpleStory
-        unityVersion:
-          - 2020.3.1f1
-        targetPlatform:
-          #- StandaloneOSX # Build a macOS standalone (Intel 64-bit).
-          - StandaloneWindows64 # Build a Windows 64-bit standalone.
-
+        testMode:
+          - EditMode
+          - PlayMode
     steps:
-      # Checkout
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          lfs: true
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Cache
-      - uses: actions/cache@v2
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v3
+        id: lfs-cache
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
+  
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+          git add .
+          git reset --hard
+      - name: Restore Library cache
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-test-project-${{ matrix.targetPlatform }}
           restore-keys: |
-            Library-${{ matrix.projectPath }}-
+            Library-test-project-
             Library-
-      
-      # Test
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
         id: testRunner
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
+          testMode: ${{ matrix.testMode }}
+          checkName: ${{ matrix.testMode }} test results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
-        if: always()
+
+      - uses: actions/upload-artifact@v3
         with:
-          name: Test results (all modes)
+          name: Test results (${{ matrix.testMode }})
           path: ${{ steps.testRunner.outputs.artifactsPath }}
+  
+  buildWebGL:
+    needs: testRunner
+    name: Build for WebGL 🖥️
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Build
-      - name: Build project
-        uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          allowDirtyBuild: true
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-      # Output
-      - uses: actions/upload-artifact@v2
+      - name: Restore LFS cache
+        uses: actions/cache@v3
+        id: lfs-cache
         with:
-          name: Build
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+          git add .
+          git reset --hard
+      - name: Restore Library cache
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-build-WebGL
+          restore-keys: |
+            Library-build-
+            Library-
+      - uses: game-ci/unity-builder@v2
+        with:
+          targetPlatform: WebGL
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-WebGL
+          path: build/WebGL
+
+  deployPages:
+    needs: buildWebGL
+    name: Deploy to Github Pages 🚀
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-WebGL
           path: build
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: build/WebGL
+
+  modifyIndex:
+    needs: deployPages
+    name: Modify index 🖊️
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Git Config
+        run: |
+          git config --global user.name ilynn-zip
+          git config --global user.email vch.dot@gmail.com
+          git fetch
+          git checkout gh-pages
+      - name: Rewrite index.html
+        run: |
+          echo "$NEW_INDEX" > index.html
+      
+      - name: Commit and push changes
+        continue-on-error: true
+        run: |
+          git add -A
+          git commit -m "Modify 🖊️"
+          git push
