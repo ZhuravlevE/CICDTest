@@ -1,22 +1,22 @@
 using UnityEngine;
 
 /// <summary>
-/// Класс ключа
+/// One
 /// </summary>
 public class Key : MonoBehaviour
 {
     /// <summary>
-    /// Объект, несущий ключ
+    /// Two
     /// </summary>
     private GameObject _hold;
 
     /// <summary>
-    /// Флаг поднятого ключа
+    /// Three
     /// </summary>
     private bool _pick = false;
 
     /// <summary>
-    /// Изменение позиции ключа
+    /// Four
     /// </summary>    
     void FixedUpdate()
     {
@@ -25,7 +25,7 @@ public class Key : MonoBehaviour
     }
 
     /// <summary>
-    /// При конакте с красным НИПом ключ подбирается
+    /// Five
     /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
