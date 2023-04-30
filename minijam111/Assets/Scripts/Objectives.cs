@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Class Objectives
+/// </summary>
 public class Objectives : MonoBehaviour
 {
     [SerializeField] private string _nextLevel;
@@ -12,7 +15,9 @@ public class Objectives : MonoBehaviour
 
     [SerializeField] private int _keyCount;
 
-
+    /// <summary>
+    /// void Update
+    /// </summary>
     private void Update()
     {
         if(Input.GetKey(KeyCode.N))
