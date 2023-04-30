@@ -1,0 +1,23 @@
+var NAVTREEINDEX0 =
+{
+"annotated.html":[0,0],
+"class_key.html":[0,0,0],
+"class_key.html#a12353f710f7ede80b140be21ea4a2d33":[0,0,0,3],
+"class_key.html#ad156e7a0ce12734f07861d6ede214ba2":[0,0,0,2],
+"class_key.html#adef198baa339a3f0a60ae97233e0deae":[0,0,0,0],
+"class_key.html#aea96defe6f06ba14b81491f472ea5307":[0,0,0,1],
+"class_objectives.html":[0,0,1],
+"class_objectives.html#ab6d376965b5996100c2507b7f3e44ff1":[0,0,1,0],
+"class_phantom_green.html":[0,0,2],
+"class_phantom_red.html":[0,0,3],
+"class_player_movement.html":[0,0,4],
+"class_player_spawn.html":[0,0,5],
+"class_spawn_phantom.html":[0,0,6],
+"classes.html":[0,1],
+"functions.html":[0,3,0],
+"functions_func.html":[0,3,1],
+"functions_vars.html":[0,3,2],
+"hierarchy.html":[0,2],
+"index.html":[],
+"pages.html":[]
+};
