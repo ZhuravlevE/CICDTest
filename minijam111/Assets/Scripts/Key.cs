@@ -1,12 +1,12 @@
 using UnityEngine;
 
 /// <summary>
-/// One
+/// Адын
 /// </summary>
 public class Key : MonoBehaviour
 {
     /// <summary>
-    /// Two
+    /// Два
     /// </summary>
     private GameObject _hold;
 
